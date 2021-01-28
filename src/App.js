@@ -1,25 +1,65 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
+import Results from './Results';
+import Book from './Book';
+import { Row, Col, Divider, Input, Checkbox, Space } from 'antd';
+import { Switch, Route } from 'react-router-dom'
+import { useHistory } from "react-router-dom";
 
-function App() {
+const { Search } = Input;
+
+
+
+export default function App() {
+  const history = useHistory();
+  const [searchWord, setSearchWord] = useState('');
+  const [regex, setRegex] = useState(false);
+  const onSearch = value => {
+    history.push("/");
+    setSearchWord(value);
+  };
+  const onChange = e => {
+    setRegex(e.target.checked);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+    <div style={{ padding: '16px' }}> 
+      <Divider orientation="left">Welcome to Gutenberg clone</Divider>
+      <Row justify="center">
+        <Space>
+        <Col style={{width:'350px'}}>
+          <div>
+            <Search
+              placeholder="Search for ebooks"
+              allowClear
+              enterButton
+              size="large"
+              loading={false}
+              onSearch={onSearch}
+            />
+          </div>
+        </Col>
+        <Col>
+          <Checkbox
+            checked={regex}
+            onChange={onChange}
+          >
+            Regular expression
+          </Checkbox>
+        </Col>
+        </Space>
+      </Row>
 
-export default App;
+      <div style={{ padding: '8px 0' }}>
+        <Switch>
+          <Route exact path="/">
+            <Results search={searchWord} regex={regex}/>
+          </Route>
+          <Route path="/book" component={Book} />
+
+        </Switch>
+      </div>
+
+    </div>
+  )
+}
