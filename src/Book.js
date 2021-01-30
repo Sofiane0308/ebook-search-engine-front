@@ -18,7 +18,7 @@ function Book(props) {
             <Divider orientation="left"></Divider>
             <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} justify="center">
                 <Col >
-                    <Space direction="vertical">
+                    <Space direction="vertical" style={{width:'300px'}}>
                         <Breadcrumb >
                             <Breadcrumb.Item>
                                 <Link to="/" ><HomeOutlined style={{ fontSize: 24 }} /></Link>
@@ -59,7 +59,7 @@ function Book(props) {
 
                 </Col>
                 <Col >
-                    <Space size={32} direction="vertical">
+                    <Space size={32} direction="vertical" style={{width:'1000px'}}>
 
                         <Space direction="vertical">
                             <Text style={{
