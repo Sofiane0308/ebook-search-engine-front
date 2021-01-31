@@ -9,13 +9,15 @@ import axios from 'axios';
 const backendURL = "http://localhost:8000/";
 const frontendURL = "http://localhost:3000/";
 const searchURL =  backendURL + "search/";
-const ebookURL = frontendURL + "ebook/"
+const ebookURL = frontendURL + "ebook/";
+const elasticURL = "http://localhost:9200/ebooks/_search/"
 
 
 const { Meta } = Card;
 
 function Results(props) {
     const [books, setBooks] = useState([]);
+    const [spell, setSpell] = useState('');
     const [neighbors, setNeighbors] = useState(null);
     const [sort, setSort] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -36,11 +38,36 @@ function Results(props) {
                     setBooks(response.data.result);
                     setNeighbors(response.data.neighbors);
                     setLoading(false);
+                    if (response.data.result.length === 0){
+                        axios.post(elasticURL, { 
+                            suggest : { 
+                             mytermsuggester : { 
+                                text : props.search, 
+                                term : { 
+                                   field : "title"
+                                 } 
+                              } 
+                            } 
+                          })
+                        .then(function(response){
+                            let options = response.data.suggest.mytermsuggester[0].options;                    
+                            options.length > 0 ? setSpell(options[0].text) : setSpell('');
+                        })
+                        .catch(function(error){
+                            console.log(error);
+                        });
+                    }
+                    else{
+                        setSpell('');
+                    }
+                        
+                    
                 })
                 .catch(function (error) {
                     console.log(error);
                 });
         } else {
+            setSpell('');
             axios.get(backendURL)
                 .then(function (response) {
                     setBooks(response.data);
@@ -53,7 +80,7 @@ function Results(props) {
         }
 
 
-    }, [props.search]);
+    }, [props.search, props.regex]);
 
     function compareEbooksByTitle(a, b) {
         const titleA = a.title.toUpperCase();
@@ -123,6 +150,8 @@ function Results(props) {
                             />
                         </Col>
                     </Row>
+                    {spell ? <Text strong> Did you mean: <Link > {spell}</Link></Text> : <div></div> }
+                    
                 </Space>
                 <Col flex='300px'>
                     {

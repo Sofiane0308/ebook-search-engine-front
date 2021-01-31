@@ -68,7 +68,7 @@ function Book(props) {
                         <Row justify="center">
                             <Space style={{ fontSize: 22 }}>
                                 <GlobalOutlined />
-                                <Text strong> {book ? book.languages.split("/").splice(1).join(" & "):''}</Text>
+                                <Text strong> {book ? book.languages : ''}</Text>
                             </Space>
                         </Row>
 
