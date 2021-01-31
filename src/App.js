@@ -24,7 +24,7 @@ export default function App() {
 
   return (
     <div style={{ padding: '16px' }}> 
-      <Divider orientation="left">Welcome to Gutenberg clone</Divider>
+      <Divider orientation="left">Welcome to Booklib a Gutenberg project clone</Divider>
       <Row justify="center">
         <Space>
         <Col style={{width:'350px'}}>
@@ -55,7 +55,7 @@ export default function App() {
           <Route exact path="/">
             <Results search={searchWord} regex={regex}/>
           </Route>
-          <Route path="/book" component={Book} />
+          <Route path="/ebook" component={Book} />
 
         </Switch>
       </div>
