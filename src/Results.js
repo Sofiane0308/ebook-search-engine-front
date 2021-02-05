@@ -6,11 +6,11 @@ import axios from 'axios';
 
 
 
-const backendURL = "http://localhost:8000/";
-const frontendURL = "http://localhost:3000/";
-const searchURL =  backendURL + "search/";
+const backendURL = "http://192.168.1.4:8000/";
+const frontendURL = "http://192.168.1.4:3000/";
+const searchURL = backendURL + "search/";
 const ebookURL = frontendURL + "ebook/";
-const elasticURL = "http://localhost:9200/ebooks/_search/"
+const elasticURL = "http://192.168.1.4:9200/ebooks/_search/"
 
 
 const { Meta } = Card;
@@ -35,33 +35,41 @@ function Results(props) {
             let params = { params: { regex: props.regex, key: props.search } }
             axios.get(searchURL, params)
                 .then(function (response) {
+                    console.log(response.data)
                     setBooks(response.data.result);
                     setNeighbors(response.data.neighbors);
                     setLoading(false);
-                    if (response.data.result.length === 0){
-                        axios.post(elasticURL, { 
-                            suggest : { 
-                             mytermsuggester : { 
-                                text : props.search, 
-                                term : { 
-                                   field : "title"
-                                 } 
-                              } 
-                            } 
-                          })
-                        .then(function(response){
-                            let options = response.data.suggest.mytermsuggester[0].options;                    
-                            options.length > 0 ? setSpell(options[0].text) : setSpell('');
+                    if (response.data.result.length === 0) {
+                        axios.post(elasticURL, {
+                            suggest: {
+                                mytermsuggester: {
+                                    text: props.search,
+                                    term: {
+                                        field: "title"
+                                    }
+                                }
+                            }
                         })
-                        .catch(function(error){
-                            console.log(error);
-                        });
+                            .then(function (response) {
+                                let options = response.data.suggest.mytermsuggester[0].options;
+
+                                if (options.length > 0) {
+                                    let variable = [];
+                                    options.forEach((item) => {
+                                        variable.push(item.text)
+                                    })
+                                    setSpell(variable.join(', '));
+                                } else setSpell('');
+                            })
+                            .catch(function (error) {
+                                console.log(error);
+                            });
                     }
-                    else{
+                    else {
                         setSpell('');
                     }
-                        
-                    
+
+
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -70,6 +78,7 @@ function Results(props) {
             setSpell('');
             axios.get(backendURL)
                 .then(function (response) {
+
                     setBooks(response.data);
                     setNeighbors(null);
                     setLoading(false);
@@ -139,8 +148,8 @@ function Results(props) {
                                             >
                                                 <Skeleton loading={loading} active>
                                                     <Meta
-                                                        title={item.title}
-                                                        description={item.authors.split("/")}
+                                                        title={<div dangerouslySetInnerHTML={{ __html: item.title }} />}
+                                                        description={<div dangerouslySetInnerHTML={{ __html: item.authors.slice(0, item.authors.length - 1) }} />}
                                                     />
                                                 </Skeleton>
                                             </Card>
@@ -150,8 +159,8 @@ function Results(props) {
                             />
                         </Col>
                     </Row>
-                    {spell ? <Text strong> Did you mean: <Link > {spell}</Link></Text> : <div></div> }
-                    
+                    {spell ? <Text strong> Did you mean: <Link > {spell}</Link></Text> : <div></div>}
+
                 </Space>
                 <Col flex='300px'>
                     {

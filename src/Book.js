@@ -15,12 +15,11 @@ function Book(props) {
 
     
     useEffect(() => {
-        let backendURL = 'http://localhost:8000' + location.pathname  ;
+        let backendURL = 'http://192.168.1.4:8000' + location.pathname  ;
         
         
         axios.get(backendURL)
             .then(function (response) {
-                console.log(response.data);
                 setBook(response.data);
             })
             .catch(function (error) {
