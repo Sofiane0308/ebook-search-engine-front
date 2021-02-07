@@ -8,34 +8,38 @@ import { useHistory } from "react-router-dom";
 import axios from 'axios';
 
 
-const { Search } = Input;
-
-const elasticURL = "http://192.168.1.4:9200/ebooks/_search/"
-
+// Main page with the search bar and ( Results or ebook details as the body)
 
 export default function App() {
+  
+  const ES_HOST = "http://" + process.env.REACT_APP_ES_HOST + ":9200";
+  const ES_SEARCH_URL = ES_HOST + "/ebooks/_search/";
+
   const history = useHistory();
+  // key to search for
   const [searchWord, setSearchWord] = useState('');
+  // regex or not
   const [regex, setRegex] = useState(false);
+  // options for the autocomplete
   const [options, setOptions] = useState([]);
+  // search event
   const onSearch = value => {
     history.push("/");
     setSearchWord(value);
   };
-  const onChange = e => {
+  // regex checkbox change
+  const onRegexChange = e => {
     setRegex(e.target.checked);
   };
+  // search input change for the autocomplete
   const handleSearch = (value) => {
     if (value)
-      axios.post(elasticURL, {
+      axios.post(ES_SEARCH_URL, {
         suggest: {
           ebooksuggest: {
             prefix: value,
             completion: {
               field: "title_suggest",
-              /*fuzzy: {
-                fuzziness: 2
-              }*/
             }
             
           }
@@ -47,6 +51,7 @@ export default function App() {
           options.forEach(element => {
             values.push({ value: element._source.title });
           });
+          // set autocomplete options
           setOptions([{options:values, label:'Book titles'}]);
         })
         .catch(function (error) {
@@ -75,7 +80,7 @@ export default function App() {
           <Col>
             <Checkbox
               checked={regex}
-              onChange={onChange}
+              onChange={onRegexChange}
             >
               Regular expression
           </Checkbox>

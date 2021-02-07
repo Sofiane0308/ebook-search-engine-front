@@ -5,26 +5,31 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 
-
-const backendURL = "http://192.168.1.4:8000/";
-const frontendURL = "http://192.168.1.4:3000/";
-const searchURL = backendURL + "search/";
-const ebookURL = frontendURL + "ebook/";
-const elasticURL = "http://192.168.1.4:9200/ebooks/_search/"
-
-
-const { Meta } = Card;
+// search results
 
 function Results(props) {
+
+    const API_HOST = "http://" + process.env.REACT_APP_API_HOST + ":8000";
+    const ES_HOST = "http://" + process.env.REACT_APP_ES_HOST + ":9200";
+    const ES_SEARCH_URL = ES_HOST + "/ebooks/_search/";
+    const API_SEARCH_URL = API_HOST + "/search/";
+
+    // ebook list
     const [books, setBooks] = useState([]);
+    // spell check 
     const [spell, setSpell] = useState('');
+    // suggestion list
     const [neighbors, setNeighbors] = useState(null);
+    // how to sort results
     const [sort, setSort] = useState(false);
+    // is it loeading ?
     const [loading, setLoading] = useState(true);
 
     const { Option } = Select;
     const { Text } = Typography;
+    const { Meta } = Card;
 
+    // change sort event
     function handleOrderChange(value) {
         if (value === 'title') { setSort(false) } else { setSort(true) }
 
@@ -32,15 +37,18 @@ function Results(props) {
 
     useEffect(() => {
         if (props.search) {
+            // there is a word to search for
             let params = { params: { regex: props.regex, key: props.search } }
-            axios.get(searchURL, params)
+            axios.get(API_SEARCH_URL, params)
                 .then(function (response) {
                     console.log(response.data)
+                    // set ebooks and suggestions
                     setBooks(response.data.result);
                     setNeighbors(response.data.neighbors);
                     setLoading(false);
                     if (response.data.result.length === 0) {
-                        axios.post(elasticURL, {
+                        // empty results => search for spell check
+                        axios.post(ES_SEARCH_URL, {
                             suggest: {
                                 mytermsuggester: {
                                     text: props.search,
@@ -52,8 +60,8 @@ function Results(props) {
                         })
                             .then(function (response) {
                                 let options = response.data.suggest.mytermsuggester[0].options;
-
                                 if (options.length > 0) {
+                                    // there is some spell check suggestions
                                     let variable = [];
                                     options.forEach((item) => {
                                         variable.push(item.text)
@@ -69,16 +77,15 @@ function Results(props) {
                         setSpell('');
                     }
 
-
                 })
                 .catch(function (error) {
                     console.log(error);
                 });
         } else {
+            // empty search word => go home
             setSpell('');
-            axios.get(backendURL)
+            axios.get(API_HOST)
                 .then(function (response) {
-
                     setBooks(response.data);
                     setNeighbors(null);
                     setLoading(false);
@@ -91,6 +98,7 @@ function Results(props) {
 
     }, [props.search, props.regex]);
 
+    // compare by title
     function compareEbooksByTitle(a, b) {
         const titleA = a.title.toUpperCase();
         const titleB = b.title.toUpperCase();
@@ -124,6 +132,7 @@ function Results(props) {
                         <Col>
                             <List
                                 grid={{ gutter: 16 }}
+                                // compare by rank
                                 dataSource={sort ? [...books].sort((a, b) => a.rank - b.rank) : [...books].sort(compareEbooksByTitle)}
                                 renderItem={item => (
                                     <List.Item>
@@ -174,7 +183,7 @@ function Results(props) {
                                             avatar={<Avatar style={{
                                                 backgroundColor: '#ffffff'
                                             }} icon={<BookTwoTone />} />}
-                                            title={<a href={ebookURL + item.id}>{item.title}</a>}
+                                            title={<a href={"/ebook/" + item.id}>{item.title}</a>}
                                             description={item.authors.split("/")}
                                         />
                                     </List.Item>

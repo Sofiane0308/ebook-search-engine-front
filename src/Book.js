@@ -4,20 +4,19 @@ import { Link, useLocation } from 'react-router-dom'
 import { GlobalOutlined, HomeOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-const { Text } = Typography;
+// book details 
 
+function Book() {
 
+    const API_HOST = "http://" + process.env.REACT_APP_API_HOST + ":8000";
 
-function Book(props) {
-
+    const { Text } = Typography;
     const [book, setBook] = useState(null);
     let location = useLocation();
 
-    
     useEffect(() => {
-        let backendURL = 'http://192.168.1.4:8000' + location.pathname  ;
-        
-        
+        // get the ebook details
+        const backendURL = API_HOST + location.pathname;
         axios.get(backendURL)
             .then(function (response) {
                 setBook(response.data);
